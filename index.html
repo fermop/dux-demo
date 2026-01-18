@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Yogurt DUX - Demo Responsiva</title>
+    <style>
+        :root {
+            --primary: #d63384; 
+            --secondary: #f8f9fa;
+            --dark: #343a40;
+            --success: #198754;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --cheese: #ffc107; 
+            --oil: #856404; 
+            --info: #0dcaf0;
+        }
+        
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background: #f0f2f5; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* --- SIDEBAR / NAVBAR --- */
+        .sidebar { 
+            width: 260px; 
+            background: white; 
+            padding: 20px; 
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1); 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            z-index: 100;
+            transition: all 0.3s;
+        }
+
+        .logo { font-size: 24px; font-weight: bold; color: var(--primary); margin-bottom: 30px; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+        
+        .nav-btn { 
+            display: flex; 
+            align-items: center; 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 10px; 
+            background: none; 
+            border: 1px solid transparent; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            text-align: left; 
+            transition: 0.3s; 
+            color: #555; 
+            font-size: 0.95em; 
+        }
+        .nav-btn:hover { background: #f8f9fa; border-color: #ddd; }
+        .nav-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 6px rgba(214, 51, 132, 0.3); }
+        .nav-icon { margin-right: 10px; font-size: 1.2em; }
+
+        /* --- CONTENIDO PRINCIPAL --- */
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
+        
+        /* Vistas y Animaciones */
+        .view { display: none; animation: fadeIn 0.4s; }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- COMPONENTES UI --- */
+        h2 { color: var(--dark); margin-top: 0; font-size: 1.5rem; }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        
+        /* Catálogo */
+        .grid-products { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+            gap: 15px; 
+            margin-top: 15px; 
+        }
+        .product-card { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 15px; 
+            text-align: center; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+            position: relative; 
+            border: 1px solid #eee; 
+            transition: 0.2s; 
+        }
+        
+        /* Badges y Stock */
+        .badge { position: absolute; top: 10px; right: 10px; font-size: 0.7em; padding: 4px 8px; border-radius: 10px; color: white; font-weight: bold; }
+        .bg-dux { background: var(--primary); }
+        .bg-cheese { background: var(--cheese); color: #333; }
+        .bg-kasbah { background: var(--oil); }
+        
+        .stock-tag { font-size: 0.8em; color: #666; background: #f0f0f0; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 5px; }
+        .stock-low { color: var(--danger); background: #fde8e8; font-weight: bold; }
+
+        /* Panel Admin & Finanzas */
+        .finance-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+        .finance-card { background: white; padding: 20px; border-radius: 12px; border-top: 4px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .finance-amount { font-size: 1.8em; font-weight: bold; color: var(--dark); word-break: break-all; }
+        .finance-detail { display: flex; justify-content: space-between; font-size: 0.85em; color: #666; margin-top: 8px; border-top: 1px solid #eee; padding-top: 8px; }
+
+        /* Inputs */
+        .money-input-group { display: flex; gap: 15px; }
+        .money-control { flex: 1; }
+        .money-control label { display: block; font-size: 0.8em; font-weight: bold; color: #666; margin-bottom: 5px; }
+        .money-control input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
+
+        /* Tablas Responsive */
+        .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9em; min-width: 400px; /* Asegura scroll en móvil */ }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; vertical-align: middle; }
+        th { background-color: #f8f9fa; color: #555; font-weight: 600; }
+        
+        /* Botones */
+        .btn { border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 500; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:active { transform: scale(0.98); } /* Feedback táctil */
+        .btn-sm { padding: 6px 12px; font-size: 0.8em; border-radius: 20px; }
+        .btn-outline { background: transparent; border: 1px solid #ddd; color: #555; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--dark); color: white; padding: 12px 24px; border-radius: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); transition: 0.3s; opacity: 0; z-index: 1000; width: max-content; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* --- MEDIA QUERIES (MÓVIL) --- */
+        @media (max-width: 768px) {
+            body { flex-direction: column; height: 100vh; }
+            
+            .sidebar { 
+                width: 100%; 
+                height: auto; 
+                flex-direction: row; 
+                padding: 10px 15px; 
+                box-sizing: border-box; 
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                position: relative;
+            }
+            
+            .logo { font-size: 1.2rem; margin: 0; border: none; padding: 0; }
+            .sidebar div:last-child { display: none; } /* Ocultar créditos en móvil */
+            .sidebar div:first-child { display: flex; align-items: center; width: 100%; gap: 10px; }
+            
+            /* Botones de navegación tipo Tabs */
+            .nav-btn { 
+                width: auto; 
+                margin: 0; 
+                padding: 8px 12px; 
+                font-size: 0.85em; 
+                white-space: nowrap;
+                flex: 1;
+                justify-content: center;
+            }
+            .nav-icon { margin-right: 5px; font-size: 1em; }
+
+            .main-content { padding: 15px; padding-bottom: 80px; } /* Espacio extra abajo */
+            
+            /* Grid a 1 columna */
+            .finance-grid { grid-template-columns: 1fr; gap: 15px; }
+            .money-input-group { flex-direction: column; gap: 10px; }
+            
+            .product-card { padding: 10px; }
+            h2 { font-size: 1.3rem; }
+        }
+
+        /* --- ESTILOS VISTA ONLINE (NUEVO) --- */
+        .online-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; height: 100%; }
+        .cart-panel { background: white; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; height: fit-content; border: 1px solid #ddd; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 0.9em; }
+        .cart-total { margin-top: 20px; padding-top: 15px; border-top: 2px solid #eee; font-size: 1.2em; font-weight: bold; display: flex; justify-content: space-between; }
+        
+        .checkout-form { margin-top: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px; }
+        .checkout-form h4 { margin-top: 0; margin-bottom: 15px; color: var(--dark); border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        .form-row { margin-bottom: 10px; }
+        .form-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 0.9em; }
+        
+        /* Ajuste para móvil en la vista online */
+        @media (max-width: 768px) {
+            .online-layout { grid-template-columns: 1fr; }
+            .cart-panel { order: -1; margin-bottom: 20px; } /* El carrito aparece arriba en móvil */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div>
+            <div class="logo">🍦 DUX</div>
+            <button class="nav-btn active" onclick="switchView('cliente')">
+                <span class="nav-icon">🛒</span> Ventas
+            </button>
+            <button class="nav-btn" onclick="switchView('admin')">
+                <span class="nav-icon">📊</span> Admin
+            </button>
+            <button class="nav-btn" onclick="switchView('online')">
+                <span class="nav-icon">🌎</span> Tienda Online
+            </button>
+        </div>
+    </div>
+
+    <div class="main-content">
+
+        <div id="view-online" class="view">
+            <div style="margin-bottom: 15px;">
+                <h2>🌎 Tienda DUX en Línea</h2>
+                <p style="color:#666; font-size:0.9em;">Simulación de lo que ve el cliente desde su casa.</p>
+            </div>
+
+            <div class="online-layout">
+                <div>
+                    <h3 style="margin-top:0;">Productos Disponibles</h3>
+                    <div id="online-catalog-container" class="grid-products"></div>
+                </div>
+
+                <div class="cart-panel">
+                    <h3 style="margin-top:0;">🛒 Tu Carrito</h3>
+                    <div id="cart-items-container">
+                        <p style="color:#999; text-align:center; padding:20px;">Tu carrito está vacío.</p>
+                    </div>
+                    
+                    <div class="cart-total">
+                        <span>Total:</span>
+                        <span id="cart-total-display">$0.00</span>
+                    </div>
+
+                    <div class="checkout-form">
+                        <h4>💳 Datos de Envío y Pago</h4>
+                        <div class="form-row">
+                            <input type="text" id="cust-address" class="form-input" placeholder="Dirección de Entrega">
+                        </div>
+                        <div class="form-row">
+                            <select id="cust-payment" class="form-input">
+                                <option value="card">💳 Tarjeta de Crédito/Débito</option>
+                                <option value="cash">💵 Efectivo contra entrega</option>
+                            </select>
+                        </div>
+                        <div class="form-row" id="card-details">
+                            <input type="text" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19">
+                            <div style="display:flex; gap:10px; margin-top:10px;">
+                                <input type="text" class="form-input" placeholder="MM/AA" style="width:50%;">
+                                <input type="text" class="form-input" placeholder="CVC" style="width:50%;">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%; margin-top:15px; background:#2c3e50;" onclick="processOnlineOrder()">Pagar y Confirmar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="view-cliente" class="view active">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2>Punto de Venta</h2>
+                <div style="background: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; border: 1px solid #ddd; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <span style="color:green; font-weight:bold;">🟢 Abierto</span>
+                </div>
+            </div>
+            <div id="catalog-container"></div>
+        </div>
+
+        <div id="view-admin" class="view">
+            <h2>Panel de Control</h2>
+
+            <div class="card" style="border-left: 5px solid var(--info);">
+                <h3 style="margin-top:0; font-size: 1.1em;">⚙️ Inicio de Turno</h3>
+                <p style="font-size:0.85em; color:#666;">Dinero base en caja/sobres:</p>
+                
+                <div class="money-input-group">
+                    <div class="money-control">
+                        <label>Caja DUX:</label>
+                        <input type="number" id="init-dux" value="500" onchange="recalcFinance()">
+                    </div>
+                    <div class="money-control">
+                        <label>Sobre Quesos:</label>
+                        <input type="number" id="init-cheese" value="0" onchange="recalcFinance()">
+                    </div>
+                    <div class="money-control">
+                        <label>Sobre Kasbah:</label>
+                        <input type="number" id="init-kasbah" value="0" onchange="recalcFinance()">
+                    </div>
+                </div>
+            </div>
+            
+            <h3 style="margin-bottom: 10px; font-size: 1.1em;">💰 Finanzas (Tiempo Real)</h3>
+            <div class="finance-grid">
+                
+                <div class="finance-card" style="border-color: var(--primary);">
+                    <div style="font-size:0.8em; text-transform:uppercase; color:#888;">Caja DUX</div>
+                    <div class="finance-amount" id="total-dux">$0.00</div>
+                    <div class="finance-detail">
+                        <span>Base: <b id="lbl-init-dux">$500</b></span>
+                        <span style="color:var(--success);">Venta: <b id="lbl-sales-dux">+$0</b></span>
+                    </div>
+                </div>
+
+                <div class="finance-card" style="border-color: var(--cheese);">
+                    <div style="font-size:0.8em; text-transform:uppercase; color:#888;">Sobre Quesos</div>
+                    <div class="finance-amount" id="total-cheese">$0.00</div>
+                    <div class="finance-detail">
+                        <span>Base: <b id="lbl-init-cheese">$0</b></span>
+                        <span style="color:var(--success);">Venta: <b id="lbl-sales-cheese">+$0</b></span>
+                    </div>
+                </div>
+
+                <div class="finance-card" style="border-color: var(--oil);">
+                    <div style="font-size:0.8em; text-transform:uppercase; color:#888;">Sobre Kasbah</div>
+                    <div class="finance-amount" id="total-kasbah">$0.00</div>
+                    <div class="finance-detail">
+                        <span>Base: <b id="lbl-init-kasbah">$0</b></span>
+                        <span style="color:var(--success);">Venta: <b id="lbl-sales-kasbah">+$0</b></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin:0; font-size: 1.1em;">📦 Stock</h3>
+                    <button class="btn btn-sm btn-outline" onclick="init()">🔄</button>
+                </div>
+                <div class="table-container" style="margin-top:10px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Prod.</th>
+                                <th>Stock</th>
+                                <th>Estado</th>
+                                <th>+</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="toast" class="toast">Notificación</div>
+
+    <script>
+        // --- DATOS INICIALES ---
+        let products = [
+            { id: 1, name: "Yogurt Natural 1L", price: 85, cat: "dux", icon: "🥛", stock: 15 },
+            { id: 2, name: "Escamocha Chica", price: 25, cat: "dux", icon: "🍓", stock: 3 }, /* POCO STOCK */
+            { id: 10, name: "Queso Menonita 520gr", price: 120, cat: "quesos", icon: "🧀", stock: 8 },
+            { id: 11, name: "Queso Jalapeño", price: 120, cat: "quesos", icon: "🌶️", stock: 2 }, /* POCO STOCK */
+            { id: 30, name: "Aceite Oliva 1L", price: 140, cat: "kasbah", icon: "🫒", stock: 10 },
+            { id: 32, name: "Aceitunas 400gr", price: 60, cat: "kasbah", icon: "🍸", stock: 5 }
+        ];
+
+        let sales = [];
+
+        function init() {
+            renderCatalog();
+            renderInventoryTable();
+            recalcFinance();
+            renderOnlineCatalog();
+        }
+
+        // --- LÓGICA TIENDA ONLINE ---
+        let cart = [];
+
+        function renderOnlineCatalog() {
+            const container = document.getElementById('online-catalog-container');
+            // Reutilizamos la lista 'products' global
+            container.innerHTML = products.map(p => {
+                let btnDisabled = p.stock === 0 ? 'disabled' : '';
+                let btnText = p.stock === 0 ? 'Agotado' : 'Agregar al Carrito';
+                
+                return `
+                    <div class="product-card">
+                        <span class="badge ${p.cat === 'dux' ? 'bg-dux' : (p.cat === 'quesos' ? 'bg-cheese' : 'bg-kasbah')}">${p.cat}</span>
+                        <div style="font-size:25px; margin:10px 0;">${p.icon}</div>
+                        <h4 style="margin:5px 0; font-size:0.9em;">${p.name}</h4>
+                        <div style="font-weight:bold; color:#555;">$${p.price}</div>
+                        <button class="btn btn-outline btn-sm" style="width:100%; margin-top:5px;" onclick="addToCart(${p.id})" ${btnDisabled}>${btnText}</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            
+            // Verificar si hay stock considerando lo que ya tengo en el carrito
+            const inCart = cart.filter(item => item.id === id).length;
+            if (product.stock - inCart <= 0) {
+                alert("No hay más stock disponible de este producto.");
+                return;
+            }
+
+            cart.push(product);
+            renderCart();
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            renderCart();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            const totalDisplay = document.getElementById('cart-total-display');
+            
+            if (cart.length === 0) {
+                container.innerHTML = '<p style="color:#999; text-align:center; padding:20px;">Tu carrito está vacío.</p>';
+                totalDisplay.innerText = "$0.00";
+                return;
+            }
+
+            let total = 0;
+            container.innerHTML = cart.map((item, index) => {
+                total += item.price;
+                return `
+                    <div class="cart-item">
+                        <div>${item.name}</div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <b>$${item.price}</b>
+                            <button onclick="removeFromCart(${index})" style="background:none; border:none; cursor:pointer; color:red;">✕</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            totalDisplay.innerText = `$${total.toFixed(2)}`;
+        }
+
+        function processOnlineOrder() {
+            if (cart.length === 0) return alert("El carrito está vacío.");
+            
+            const address = document.getElementById('cust-address').value;
+            if (!address) return alert("Por favor ingresa una dirección de envío.");
+
+            // 1. Descontar Stock Global (¡Integración Real!)
+            cart.forEach(item => {
+                const prodIndex = products.findIndex(p => p.id === item.id);
+                if (prodIndex !== -1) products[prodIndex].stock--;
+            });
+
+            // 2. Simular éxito
+            showToast(`✅ Pedido confirmado para enviar a: ${address}`);
+            
+            // 3. Limpiar
+            cart = [];
+            document.getElementById('cust-address').value = '';
+            renderCart();
+            renderOnlineCatalog(); // Actualizar botones de stock en la web
+            init(); // Actualizar vista de admin también
+        }
+
+        // --- RENDERIZADO CLIENTE ---
+        function renderCatalog() {
+            const container = document.getElementById('catalog-container');
+            
+            const cats = {
+                'dux': { title: 'Yogurt DUX', badge: 'bg-dux', label: 'DUX' },
+                'quesos': { title: 'Quesos', badge: 'bg-cheese', label: 'Menonita' },
+                'kasbah': { title: 'Kasbah', badge: 'bg-kasbah', label: 'Kasbah' }
+            };
+
+            let html = '';
+            
+            for (const [key, info] of Object.entries(cats)) {
+                const items = products.filter(p => p.cat === key);
+                if (items.length === 0) continue;
+
+                html += `<h3 style="margin-top:20px; border-bottom:1px solid #ddd; padding-bottom:5px; font-size:1.1em;">${info.title}</h3>`;
+                html += `<div class="grid-products">`;
+                
+                items.forEach(p => {
+                    let stockClass = p.stock < 5 ? 'stock-low' : '';
+                    let btnDisabled = p.stock === 0 ? 'disabled' : '';
+                    let btnText = p.stock === 0 ? '🚫' : 'Vender'; // Texto corto móvil
+                    let stockText = p.stock === 0 ? 'Sin stock' : `Stock: ${p.stock}`;
+
+                    html += `
+                        <div class="product-card">
+                            <span class="badge ${info.badge}">${info.label}</span>
+                            <div style="font-size:30px; margin:10px 0;">${p.icon}</div>
+                            <h4 style="margin:5px 0; font-size:0.95em;">${p.name}</h4>
+                            <div class="stock-tag ${stockClass}">${stockText}</div>
+                            <div style="font-weight:bold; color:#555; margin-bottom:10px;">$${p.price}</div>
+                            <button class="btn btn-primary btn-sm" style="width:100%" onclick="sell(${p.id})" ${btnDisabled}>${btnText}</button>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        // --- RENDERIZADO ADMIN (INVENTARIO) ---
+        function renderInventoryTable() {
+            const tbody = document.getElementById('inventory-body');
+            tbody.innerHTML = products.map(p => {
+                let status = `<span style="color:green; font-weight:bold;">OK</span>`;
+                if(p.stock === 0) status = `<span style="color:red; font-weight:bold;">⛔</span>`; // Icono para móvil
+                else if(p.stock < 5) status = `<span style="color:orange; font-weight:bold;">⚠️</span>`;
+
+                return `
+                    <tr>
+                        <td>${p.icon} <small>${p.name.substring(0,15)}...</small></td>
+                        <td style="font-weight:bold; text-align:center;">${p.stock}</td>
+                        <td style="text-align:center;">${status}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline" onclick="addStock(${p.id}, 5)">+5</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // --- LÓGICA FINANCIERA ---
+        function recalcFinance() {
+            const initDux = parseFloat(document.getElementById('init-dux').value) || 0;
+            const initCheese = parseFloat(document.getElementById('init-cheese').value) || 0;
+            const initKasbah = parseFloat(document.getElementById('init-kasbah').value) || 0;
+
+            let salesDux = sales.filter(s => s.cat === 'dux').reduce((a,b)=>a+b.price, 0);
+            let salesCheese = sales.filter(s => s.cat === 'quesos').reduce((a,b)=>a+b.price, 0);
+            let salesKasbah = sales.filter(s => s.cat === 'kasbah').reduce((a,b)=>a+b.price, 0);
+
+            // Actualizar UI
+            document.getElementById('lbl-init-dux').innerText = `$${initDux}`;
+            document.getElementById('lbl-sales-dux').innerText = `+$${salesDux}`;
+            document.getElementById('total-dux').innerText = `$${(initDux + salesDux).toFixed(2)}`;
+
+            document.getElementById('lbl-init-cheese').innerText = `$${initCheese}`;
+            document.getElementById('lbl-sales-cheese').innerText = `+$${salesCheese}`;
+            document.getElementById('total-cheese').innerText = `$${(initCheese + salesCheese).toFixed(2)}`;
+
+            document.getElementById('lbl-init-kasbah').innerText = `$${initKasbah}`;
+            document.getElementById('lbl-sales-kasbah').innerText = `+$${salesKasbah}`;
+            document.getElementById('total-kasbah').innerText = `$${(initKasbah + salesKasbah).toFixed(2)}`;
+        }
+
+        // --- ACCIONES ---
+        function sell(id) {
+            const index = products.findIndex(p => p.id === id);
+            if (index !== -1 && products[index].stock > 0) {
+                products[index].stock--;
+                const p = products[index];
+                sales.push({ name: p.name, price: p.price, cat: p.cat });
+                showToast(`✅ ${p.name}`); // Mensaje corto
+                init(); 
+            }
+        }
+
+        function addStock(id, qty) {
+            const index = products.findIndex(p => p.id === id);
+            if (index !== -1) {
+                products[index].stock += qty;
+                showToast(`📦 +${qty} ${products[index].name.substring(0,10)}...`);
+                init();
+            }
+        }
+
+        // --- UTILIDADES ---
+        // *** FUNCIÓN CORREGIDA AQUÍ ***
+        function switchView(viewName) {
+            // 1. Limpiar todos
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            
+            // 2. Activar vista
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            
+            // 3. Activar botón correcto (0=Ventas, 1=Admin, 2=Online)
+            const buttons = document.querySelectorAll('.nav-btn');
+            if(viewName === 'cliente') buttons[0].classList.add('active');
+            else if(viewName === 'admin') buttons[1].classList.add('active');
+            else if(viewName === 'online') buttons[2].classList.add('active'); // <- Caso añadido
+            
+            window.scrollTo(0,0);
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
+        }
+
+        init();
+    </script>
+</body>
+</html>
